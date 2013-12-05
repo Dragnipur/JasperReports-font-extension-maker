@@ -4,14 +4,11 @@
  */
 package jasperreports.font.extension.generator;
 
-import jasperreports.font.extension.generator.util.FileDragDropListener;
-import java.awt.Cursor;
-import java.awt.dnd.DropTarget;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
-import javax.swing.JList;
 import javax.swing.filechooser.FileFilter;
 
 /**
@@ -19,136 +16,178 @@ import javax.swing.filechooser.FileFilter;
  * @author Pieter
  */
 public class ChooseFontPanel extends javax.swing.JPanel {
-    
+
     private JFileChooser fileChooser;
-    
+    private DefaultListModel listModel;
+    private Fonts fonts;
+
     public ChooseFontPanel() {
         initComponents();
-        FileDragDropListener dragDropListener = new FileDragDropListener();
-        DropTarget dropTarget = new DropTarget(fileDropPanel, dragDropListener);
-        fileDropPanel.addMouseListener(new FileUploadMouseListener());
+        listModel = new DefaultListModel();
+        fontOverview.setModel(listModel);     
+        fonts = new Fonts();
+        
+        addFontOverviewKeyListener();
+
     }
 
     private void handleFileInput(int result) {
         if (result == JFileChooser.APPROVE_OPTION) {
-            File[] files = fileChooser.getSelectedFiles();
-            
-            for(int i = 0; i < files.length; i++) {
-                String filePath = files[i].getAbsolutePath();
-            }
+            File[] fontFiles = fileChooser.getSelectedFiles();
+            addFontsToOverview(fontFiles);
         }
     }
 
-    class FileUploadMouseListener implements MouseListener {
+    private void addFontsToOverview(File[] fontFiles) {
+        for (int i = 0; i < fontFiles.length; i++) {
+            String filePath = fontFiles[i].getAbsolutePath();
+            listModel.addElement(filePath);
+            fonts.addFont(filePath);
+        }
+    }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
+    private void addFontOverviewKeyListener() {
+        KeyAdapter keyAdapter = setupKeyAdapter();
+        fontOverview.addKeyListener(keyAdapter);
+    }
 
-            FileFilter fileFilter = new FileFilter() {
-                @Override
-                public boolean accept(File file) {
+    private KeyAdapter setupKeyAdapter() {
+        KeyAdapter keyAdapter = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent key) {
 
-                    if (file.isDirectory()) {
-                        return true;
-                    }
-
-                    String[] acceptedFileExtensions = {"otf", "TTF", "OTF", "ttf"};
-                    String fileName = file.getName();
-
-                    for (int i = 0; i < acceptedFileExtensions.length; i++) {
-                        String extension = acceptedFileExtensions[i];
-                        if (fileName.endsWith(extension) == true) {
-                            return true;
-                        }
-                    }
-                    return false;
+                if (key.getKeyCode() == KeyEvent.VK_DELETE) {
+                    int[] selectedFonts = fontOverview.getSelectedIndices();
+                    removeSelectedFonts(selectedFonts);
                 }
+            }
+        };
+        return keyAdapter;
+    }
 
-                @Override
-                public String getDescription() {
-                    return "Open font files";
-                }
-            };
+    private void removeSelectedFonts(int[] selectedFonts) {
+        int fontCount = selectedFonts.length;
 
-            fileChooser = new JFileChooser();
-            fileChooser.setFileFilter(fileFilter);
-            fileChooser.setMultiSelectionEnabled(true);
-            int result = fileChooser.showOpenDialog(fileDropPanel);
-            handleFileInput(result);
+        for (int i = fontCount-1; i >=0; i--) {
+            listModel.remove(selectedFonts[i]);
+            fonts.removeFont(i);
         }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            //do nothing
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            //do nothing
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
+    }
+    
+    public Fonts getFonts() {
+        return fonts;
+    }
+    
+    public void setFonts(Fonts fonts) {
+        this.fonts = fonts;
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileDropPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        selectFonts = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        fontOverview = new javax.swing.JList();
 
-        setPreferredSize(new java.awt.Dimension(700, 300));
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(jList1);
 
-        fileDropPanel.setBackground(new java.awt.Color(255, 255, 204));
+        setMaximumSize(null);
+        setMinimumSize(null);
+        setPreferredSize(new java.awt.Dimension(700, 500));
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
-        jLabel1.setText("Select your font files or drag them in!");
+        selectFonts.setText("Select your fonts");
+        selectFonts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectFontsActionPerformed(evt);
+            }
+        });
 
-        javax.swing.GroupLayout fileDropPanelLayout = new javax.swing.GroupLayout(fileDropPanel);
-        fileDropPanel.setLayout(fileDropPanelLayout);
-        fileDropPanelLayout.setHorizontalGroup(
-            fileDropPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, fileDropPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(223, 223, 223))
-        );
-        fileDropPanelLayout.setVerticalGroup(
-            fileDropPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(fileDropPanelLayout.createSequentialGroup()
-                .addGap(113, 113, 113)
-                .addComponent(jLabel1)
-                .addContainerGap(132, Short.MAX_VALUE))
-        );
+        jScrollPane2.setViewportView(fontOverview);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(89, Short.MAX_VALUE)
-                .addComponent(fileDropPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 431, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(81, 81, 81))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(selectFonts, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(fileDropPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addComponent(selectFonts, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(22, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void selectFontsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectFontsActionPerformed
+        FileFilter fileFilter = setupFileFilter();
+        int result = showFileChooser(fileFilter);
+        handleFileInput(result);
+    }//GEN-LAST:event_selectFontsActionPerformed
+
+    private int showFileChooser(FileFilter fileFilter) {
+        fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(fileFilter);
+        fileChooser.setMultiSelectionEnabled(true);
+        int result = fileChooser.showOpenDialog(this);
+        return result;
+    }
+
+    private FileFilter setupFileFilter() {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+
+                if (file.isDirectory()) {
+                    return true;
+                } else if (isFontFile(file)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            public boolean isFontFile(File file) {
+                String[] acceptedFileExtensions = {"otf", "TTF", "OTF", "ttf"};
+                String fileName = file.getName();
+
+                for (int i = 0; i < acceptedFileExtensions.length; i++) {
+                    String extension = acceptedFileExtensions[i];
+                    if (fileName.endsWith(extension) == true) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Open font files";
+            }
+        };
+
+        return fileFilter;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel fileDropPanel;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JList fontOverview;
+    private javax.swing.JList jList1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JButton selectFonts;
     // End of variables declaration//GEN-END:variables
 }
