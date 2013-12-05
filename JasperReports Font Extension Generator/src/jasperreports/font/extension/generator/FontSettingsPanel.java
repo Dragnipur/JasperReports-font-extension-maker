@@ -94,13 +94,27 @@ public class FontSettingsPanel extends javax.swing.JPanel {
     }
 
     private Font setFontData(Font font, int row) {
-
+        int filledFields = 0;
         for (int column = 1; column <= 3; column++) {
             if (tableModel.getValueAt(row, column) != null) {
                 String value = tableModel.getValueAt(row, column).toString();
                 font = setFontValue(font, value, column);
+                filledFields++;
+            }
+            else
+            {
+                font = setFontValue(font, "", column);
             }
         }
+        
+        if(filledFields == 3) {
+            font.setCompleted(true);
+        }
+        else
+        {
+            font.setCompleted(false);
+        }
+        
         return font;
     }
 

@@ -6,10 +6,12 @@ import java.nio.file.Paths;
 public class Font {
     
     private String fontFilePath, fileName, fontName, family, type;
+    private boolean completed;
     
     public Font(String fontFilePath) {
         this.fontFilePath = fontFilePath;
         extractFileNameFromPath();
+        completed = false;
     }
     
     private void extractFileNameFromPath() {
@@ -29,6 +31,10 @@ public class Font {
         this.type = type;
     }
     
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+    
     public String getFileName() {
         return fileName;
     }
@@ -43,5 +49,9 @@ public class Font {
     
     public String getType() {
         return type;
+    }
+    
+    public String getFilePath() {
+        return fontFilePath;
     }
 }
