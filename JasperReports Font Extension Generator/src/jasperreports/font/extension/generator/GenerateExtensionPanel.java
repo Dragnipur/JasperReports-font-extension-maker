@@ -34,7 +34,7 @@ public class GenerateExtensionPanel extends javax.swing.JPanel {
             extensionGenerator.setupExtensionFolders();
             log.append("DONE\n");
             log.append("Creating manifest...\n");
-            extensionGenerator.setupManifest();
+            //extensionGenerator.setupManifest();
             log.append("DONE\n");
             log.append("Importing font files...\n");
             extensionGenerator.importFontFiles();

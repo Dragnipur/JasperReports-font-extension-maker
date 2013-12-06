@@ -12,8 +12,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -127,7 +125,7 @@ public class ExtensionGenerator {
             FileWriter fw = new FileWriter(properties.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write("net.sf.jasperreports.extension.registry.factory.simple.font.families=net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory\n");
-            bw.write("net.sf.jasperreports.extension.simple.font.families.gen_fonts=fonts/fonts.xml");
+            bw.write("net.sf.jasperreports.extension.simple.font.families.gen_fonts=fonts.xml");
             bw.close();
 
             return true;
@@ -176,7 +174,7 @@ public class ExtensionGenerator {
             String fontType = font.getType();
 
             if (fontFamily.equals(family) && fontType.equals(type)) {
-                String fontName = "fonts/" + font.getFileName();
+                String fontName = font.getFileName();
                 return fontName;
             }
         }
@@ -252,77 +250,77 @@ public class ExtensionGenerator {
         try {
             Manifest manifest = new Manifest();
             manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-            JarOutputStream output = new JarOutputStream(new FileOutputStream("fontExtension.jar"), manifest);
-            File file = new File(folderName + "/src/");
-            addFileToJar(file, output);
-            output.close();
+            FileOutputStream jarStream = new FileOutputStream("fontExtension.jar");
+            JarOutputStream target = new JarOutputStream(jarStream, manifest);
+            File source = new File(folderName + "/src/");
+            addFileToJar(source, target);
+            target.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+
         return true;
     }
 
-    private void addFileToJar(File source, JarOutputStream target) throws IOException {
-        BufferedInputStream in = null;
+    private void addFileToJar(File source, JarOutputStream target) {
         try {
-            if (source.isDirectory()) {
-                String name = source.getPath().replace("\\", "/");
-                if (!name.isEmpty()) {
-                    if (!name.endsWith("/")) {
-                        name += "/";
+            BufferedInputStream in = null;
+            try {
+                if (source.isDirectory()) {
+                    String name = source.getPath().replace("\\", "/");
+                    if (!name.isEmpty()) {
+                        if (!name.endsWith("/")) {
+                            name += "/";
+                        }
+
+                        if (name.contains("fonts/")) {
+                            //String folder = "fonts/";
+                            //JarEntry entry = new JarEntry(folder);
+                            //entry.setTime(source.lastModified());
+                            //target.putNextEntry(entry);
+                            //target.closeEntry();
+                        }
                     }
-
-                    String folder = "";
-                    System.out.println(name);
-                    if (name.contains("fonts/")) {
-                        folder = "fonts/";
+                    
+                    for (File nestedFile : source.listFiles()) {
+                        addFileToJar(nestedFile, target);
                     }
-
-                    JarEntry entry = new JarEntry(folder);
-                    entry.setTime(source.lastModified());
-                    target.putNextEntry(entry);
-                    target.closeEntry();
+                    return;
                 }
-                for (File nestedFile : source.listFiles()) {
-                    addFileToJar(nestedFile, target);
+
+                String path = source.getPath().replace("\\", "/");
+                String fileName;
+
+                if (path.contains("fonts/")) {
+                    String split[] = path.split("fonts/");
+                    fileName = split[1];
+                } else {
+                    String split[] = path.split("src/");
+                    fileName = split[1];
                 }
-                return;
-            }
 
-            String path = source.getPath();
-            String fileName;
-            
-            if (path.contains("fonts\\\\")) {
-                System.out.println("fonts: " + path);
-                String split[] = path.split("fonts\\\\");
-                fileName = split[1];
-            }
-            else
-            {
-                System.out.println("src: " + path);
-                String split[] = path.split("src\\\\");
-                fileName = split[1];
-            }
+                JarEntry entry = new JarEntry(fileName);
+                entry.setTime(source.lastModified());
+                target.putNextEntry(entry);
+                in = new BufferedInputStream(new FileInputStream(source));
 
-            JarEntry entry = new JarEntry(fileName);
-            entry.setTime(source.lastModified());
-            target.putNextEntry(entry);
-            in = new BufferedInputStream(new FileInputStream(source));
-
-            byte[] buffer = new byte[1024];
-            while (true) {
-                int count = in.read(buffer);
-                if (count == -1) {
-                    break;
+                byte[] buffer = new byte[1024];
+                while (true) {
+                    int count = in.read(buffer);
+                    if (count == -1) {
+                        break;
+                    }
+                    target.write(buffer, 0, count);
                 }
-                target.write(buffer, 0, count);
+                target.closeEntry();
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
             }
-            target.closeEntry();
-        } finally {
-            if (in != null) {
-                in.close();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
