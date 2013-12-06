@@ -6,7 +6,6 @@ package jasperreports.font.extension.generator;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -32,14 +31,13 @@ public class FontSettingsPanel extends javax.swing.JPanel {
 
     private void setupTableColumns() {
         tableModel.addColumn("filename");
-        tableModel.addColumn("fontname");
         tableModel.addColumn("family");
         tableModel.addColumn("type");
         setupTypeComboBox();
     }
 
     private void setupTypeComboBox() {
-        TableColumn typeColumn = fontTable.getColumnModel().getColumn(3);
+        TableColumn typeColumn = fontTable.getColumnModel().getColumn(2);
 
         JComboBox comboBox = new JComboBox();
         comboBox.addItem("Normal");
@@ -56,19 +54,17 @@ public class FontSettingsPanel extends javax.swing.JPanel {
         for (int i = 0; i < fontCount; i++) {
             Font font = fonts.getFont(i);
             String fileName = font.getFileName();
-            String fontName = font.getFontName();
             String fontFamily = font.getFamily();
             String fontType = font.getType();
-            addNewTableRow(fileName, fontName, fontFamily, fontType);
+            addNewTableRow(fileName, fontFamily, fontType);
         }
     }
 
-    private void addNewTableRow(String fileName, String fontName, String fontFamily, String fontType) {
-        String[] row = new String[4];
+    private void addNewTableRow(String fileName, String fontFamily, String fontType) {
+        String[] row = new String[3];
         row[0] = fileName;
-        row[1] = fontName;
-        row[2] = fontFamily;
-        row[3] = fontType;
+        row[1] = fontFamily;
+        row[2] = fontType;
         tableModel.addRow(row);
     }
 
@@ -95,39 +91,33 @@ public class FontSettingsPanel extends javax.swing.JPanel {
 
     private Font setFontData(Font font, int row) {
         int filledFields = 0;
-        for (int column = 1; column <= 3; column++) {
+        for (int column = 1; column <= 2; column++) {
             if (tableModel.getValueAt(row, column) != null) {
                 String value = tableModel.getValueAt(row, column).toString();
                 font = setFontValue(font, value, column);
                 filledFields++;
-            }
-            else
-            {
+            } else {
                 font = setFontValue(font, "", column);
             }
         }
-        
-        if(filledFields == 3) {
+
+        if (filledFields == 3) {
             font.setCompleted(true);
-        }
-        else
-        {
+        } else {
             font.setCompleted(false);
         }
-        
+
         return font;
     }
 
     private Font setFontValue(Font font, String value, int column) {
         switch (column) {
             case 1:
-                font.setFontName(value);
-                break;
-            case 2:
                 font.setFamily(value);
                 break;
-            case 3:
+            case 2:
                 font.setType(value);
+                break;
         }
         return font;
     }
@@ -138,6 +128,7 @@ public class FontSettingsPanel extends javax.swing.JPanel {
 
         tableScrollPane = new javax.swing.JScrollPane();
         fontTable = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
 
         fontTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -152,25 +143,32 @@ public class FontSettingsPanel extends javax.swing.JPanel {
         ));
         tableScrollPane.setViewportView(fontTable);
 
+        jLabel1.setText("Each family needs atleast a \"Normal\" font. if you don't add a normal font the jar will break your main program!");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 731, Short.MAX_VALUE)
+                .addComponent(tableScrollPane)
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(73, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
                 .addComponent(tableScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(22, 22, 22))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable fontTable;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 }

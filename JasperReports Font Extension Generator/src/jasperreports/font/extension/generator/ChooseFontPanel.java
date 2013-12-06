@@ -24,9 +24,9 @@ public class ChooseFontPanel extends javax.swing.JPanel {
     public ChooseFontPanel() {
         initComponents();
         listModel = new DefaultListModel();
-        fontOverview.setModel(listModel);     
+        fontOverview.setModel(listModel);
         fonts = new Fonts();
-        
+
         addFontOverviewKeyListener();
 
     }
@@ -41,8 +41,11 @@ public class ChooseFontPanel extends javax.swing.JPanel {
     private void addFontsToOverview(File[] fontFiles) {
         for (int i = 0; i < fontFiles.length; i++) {
             String filePath = fontFiles[i].getAbsolutePath();
-            listModel.addElement(filePath);
-            fonts.addFont(filePath);
+
+            if (!fonts.fontAlreadyAdded(filePath)) {
+                listModel.addElement(filePath);
+                fonts.addFont(filePath);
+            }
         }
     }
 
@@ -68,17 +71,19 @@ public class ChooseFontPanel extends javax.swing.JPanel {
     private void removeSelectedFonts(int[] selectedFonts) {
         int fontCount = selectedFonts.length;
 
-        for (int i = fontCount-1; i >=0; i--) {
-            listModel.remove(selectedFonts[i]);
-            fonts.removeFont(i);
+        for (int listLocation = fontCount - 1; listLocation >= 0; listLocation--) {
+            int location = selectedFonts[listLocation];
+            listModel.remove(location);
+            fonts.removeFont(location);
         }
     }
-    
+
     public Fonts getFonts() {
         return fonts;
     }
-    
+
     public void setFonts(Fonts fonts) {
+        System.out.println("test");
         this.fonts = fonts;
     }
 

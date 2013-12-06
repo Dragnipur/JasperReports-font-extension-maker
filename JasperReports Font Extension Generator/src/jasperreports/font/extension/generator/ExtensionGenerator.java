@@ -42,7 +42,7 @@ public class ExtensionGenerator {
         this.fonts = fonts;
     }
 
-    public boolean setupFontFamilies() {
+    public void setupFontFamilies() {
         fontFamilies = new ArrayList<>();
         int fontCount = fonts.getFontCount();
 
@@ -54,8 +54,6 @@ public class ExtensionGenerator {
                 fontFamilies.add(fontFamily);
             }
         }
-
-        return true;
     }
 
     public boolean setupExtensionFolders() {
@@ -68,25 +66,6 @@ public class ExtensionGenerator {
     private void generateRandomFolderName() {
         folderName = RandomStringUtils.randomAlphanumeric(20);
 
-    }
-
-    public boolean setupManifest() {
-        try {
-            File manifest = new File(folderName + "/manifest.mf");
-            manifest.createNewFile();
-
-            FileWriter fw = new FileWriter(manifest.getAbsoluteFile());
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("Manifest-Version: 1.0\n");
-            bw.write("X-COMMENT: Main-Class will be added automatically by build");
-            bw.close();
-
-            return true;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     public boolean importFontFiles() {
@@ -253,7 +232,7 @@ public class ExtensionGenerator {
             FileOutputStream jarStream = new FileOutputStream("fontExtension.jar");
             JarOutputStream target = new JarOutputStream(jarStream, manifest);
             File source = new File(folderName + "/src/");
-            addFileToJar(source, target);
+            boolean success = addFileToJar(source, target);
             target.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -263,7 +242,7 @@ public class ExtensionGenerator {
         return true;
     }
 
-    private void addFileToJar(File source, JarOutputStream target) {
+    private boolean addFileToJar(File source, JarOutputStream target) {
         try {
             BufferedInputStream in = null;
             try {
@@ -273,20 +252,12 @@ public class ExtensionGenerator {
                         if (!name.endsWith("/")) {
                             name += "/";
                         }
-
-                        if (name.contains("fonts/")) {
-                            //String folder = "fonts/";
-                            //JarEntry entry = new JarEntry(folder);
-                            //entry.setTime(source.lastModified());
-                            //target.putNextEntry(entry);
-                            //target.closeEntry();
-                        }
                     }
-                    
+
                     for (File nestedFile : source.listFiles()) {
                         addFileToJar(nestedFile, target);
                     }
-                    return;
+                    return false;
                 }
 
                 String path = source.getPath().replace("\\", "/");
@@ -321,15 +292,50 @@ public class ExtensionGenerator {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public boolean cleanUpTemporaryFiles() {
         try {
-            FileUtils.deleteDirectory(new File(folderName));
+            recursiveDelete(new File(folderName));
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
+    }
+
+    public void recursiveDelete(File file) throws IOException {
+
+        if (file.isDirectory()) {
+
+            //directory is empty, then delete it
+            if (file.list().length == 0) {
+                file.delete();
+            } else {
+
+                //list all the directory contents
+                String files[] = file.list();
+
+                for (String temp : files) {
+                    //construct the file structure
+                    File fileDelete = new File(file, temp);
+
+                    //recursive delete
+                    recursiveDelete(fileDelete);
+                }
+
+                //check the directory again, if empty then delete it
+                if (file.list().length == 0) {
+                    file.delete();
+                }
+            }
+
+        } else {
+            //if file, then delete it
+            file.delete();
+        }
     }
 }

@@ -105,8 +105,11 @@ public class MainFrame {
             public void actionPerformed(ActionEvent e) {
                 CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
                 cardLayout.previous(contentPanel);
+                int previousPanel = currentPanel;
                 currentPanel--;
+
                 setupButtonVisibility();
+                passFontData(previousPanel, currentPanel);
             }
         };
         return previousActionListener;
@@ -151,6 +154,7 @@ public class MainFrame {
     private void passFontDataBack() {
         switch (currentPanel) {
             case 1:
+                fonts = fontSettingsPanel.getFonts();
                 chooseFontPanel.setFonts(fonts);
                 break;
             case 2:

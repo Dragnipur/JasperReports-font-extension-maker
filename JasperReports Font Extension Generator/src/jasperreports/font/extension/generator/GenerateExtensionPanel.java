@@ -25,30 +25,44 @@ public class GenerateExtensionPanel extends javax.swing.JPanel {
 
         @Override
         public void run() {
+            boolean success = false;
             log.append("Start generating extension...\n");
             ExtensionGenerator extensionGenerator = new ExtensionGenerator(fonts);
-            log.append("Setting up font families...\n");
             extensionGenerator.setupFontFamilies();
-            log.append("DONE\n");
+            
             log.append("Creating required folders...\n");
-            extensionGenerator.setupExtensionFolders();
-            log.append("DONE\n");
-            log.append("Creating manifest...\n");
-            //extensionGenerator.setupManifest();
-            log.append("DONE\n");
+            success = extensionGenerator.setupExtensionFolders();
+            log.append(getResponse(success));
+            
             log.append("Importing font files...\n");
-            extensionGenerator.importFontFiles();
-            log.append("DONE\n");
+            success = extensionGenerator.importFontFiles();
+            log.append(getResponse(success));
+            
             log.append("Creating properties file...\n");
-            extensionGenerator.createPropertiesFile();
-            log.append("DONE\n");
+            success = extensionGenerator.createPropertiesFile();
+            log.append(getResponse(success));
+            
             log.append("Creating fonts.xml...\n");
-            extensionGenerator.createFontsXml();
-            log.append("DONE\n");
+            success = extensionGenerator.createFontsXml();
+            log.append(getResponse(success));
+            
             log.append("Generating jar...\n");
-            extensionGenerator.generateJar();
-            log.append("DONE\n");
+            success = extensionGenerator.generateJar();
+            log.append(getResponse(success));
+            
+            log.append("Cleaning up temporary files...\n");
+            success = extensionGenerator.cleanUpTemporaryFiles();
+            log.append(getResponse(success));
+            
             log.append("Font extension successfully generated!");
+        }
+    }
+    
+    private String getResponse(boolean success) {
+        if(success == true) {
+            return "DONE\n";
+        } else {
+            return "FAILED\n";
         }
     }
 
